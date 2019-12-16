@@ -11,31 +11,45 @@ import org.apache.shiro.authz.annotation.RequiresGuest;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.apache.shiro.authz.annotation.RequiresUser;
-import org.apache.shiro.authz.permission.WildcardPermission;
 import org.apache.shiro.subject.Subject;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpSession;
+
 @RestController
 @RequestMapping("/loginLogout")
 public class LoginController {
     @GetMapping("/login")
-    public String login(String username, String password) {
+    public String login(String username, String password, HttpSession session) {
         var token = new UsernamePasswordToken(username, password);
-        token.setRememberMe(true);
+
 
         Subject currentUser = SecurityUtils.getSubject();
         System.out.println("Authenticated前=" + currentUser.isAuthenticated());
         System.out.println("Remembered前=" + currentUser.isRemembered());
 
 
+//        SimpleCookie simpleCookie = new SimpleCookie("myCookie");
+//        simpleCookie.setMaxAge(5); // 單位為秒，測試 rememberMe
+//
+//        CookieRememberMeManager cookieRememberMeManager = new CookieRememberMeManager();
+//        cookieRememberMeManager.setCookie(simpleCookie);
+
+        //session.setMaxInactiveInterval(5); // 單位為秒，5秒失效，測試 rememberMe
+        // 測試結果為 cookie 無效，session 可以
+        // session 還可以在 config 裡設定，取得 DefaultWebSessionManager 類，然後塞到 DefaultWebSecurityManager 裡，
+        // DefaultWebSessionManager 必需寫在 DefaultWebSecurityManager 前面
         try {
-            currentUser.login(token);
-            System.out.println("a==" + currentUser.isPermitted("firstFile:read"));
-            System.out.println("b==" + currentUser.isPermitted(new WildcardPermission("firstFile:write,read")));
-            System.out.println("c==" + currentUser.isPermitted(new WildcardPermission("firstFile:*")));
-            System.out.println("d==" + currentUser.isPermitted("secondFile"));
+            if (!currentUser.isAuthenticated() && !currentUser.isRemembered()) { // 這兩個永遠一個為 true；一個 false
+                token.setRememberMe(true);
+                currentUser.login(token);
+            }
+//            System.out.println("a==" + currentUser.isPermitted("firstFile:read"));
+//            System.out.println("b==" + currentUser.isPermitted(new WildcardPermission("firstFile:write,read")));
+//            System.out.println("c==" + currentUser.isPermitted(new WildcardPermission("firstFile:*")));
+//            System.out.println("d==" + currentUser.isPermitted("secondFile"));
             System.out.println("Authenticated後=" + currentUser.isAuthenticated());
             System.out.println("Remembered後=" + currentUser.isRemembered());
         } catch (UnknownAccountException uae) {
@@ -67,11 +81,13 @@ public class LoginController {
     public String testPermission() {
         return "testPermission";
     }
+
     @GetMapping("/bbb2")
     @RequiresPermissions("firstFile:read") // 和 PermissionDao 裡的字串一樣就會過
     public String testPermission2() {
         return "testPermission2";
     }
+
     @GetMapping("/bbb3")
     @RequiresPermissions("firstFile")
     public String testPermission3() {

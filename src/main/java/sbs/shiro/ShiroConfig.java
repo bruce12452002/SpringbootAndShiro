@@ -4,6 +4,7 @@ import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +17,13 @@ import java.util.Map;
 public class ShiroConfig {
     @Resource
     private MyRealm myRealm;
+
+    @Bean
+    public DefaultWebSessionManager defaultWebSessionManager() {
+        var defaultWebSessionManager = new DefaultWebSessionManager();
+        defaultWebSessionManager.setGlobalSessionTimeout(5000); // 5 秒過期
+        return defaultWebSessionManager;
+    }
 
     @Bean
     public ShiroFilterFactoryBean shiroFilterFactoryBean(SecurityManager securityManager) {
@@ -35,9 +43,10 @@ public class ShiroConfig {
     }
 
     @Bean
-    public DefaultWebSecurityManager defaultSecurityManager() {
+    public DefaultWebSecurityManager defaultSecurityManager(DefaultWebSessionManager defaultWebSessionManager) {
         var defaultSecurityManager = new DefaultWebSecurityManager();
         defaultSecurityManager.setRealm(myRealm);
+        defaultSecurityManager.setSessionManager(defaultWebSessionManager);
         return defaultSecurityManager;
     }
 
