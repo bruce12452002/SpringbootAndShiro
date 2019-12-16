@@ -21,7 +21,7 @@ public class ShiroConfig {
     public ShiroFilterFactoryBean shiroFilterFactoryBean(SecurityManager securityManager) {
         Map<String, String> filterMap = new LinkedHashMap<>();
         filterMap.put("/loginLogout/login", "anon"); // https://shiro.apache.org/web.html#Web-defaultfilters
-        filterMap.put("/loginLogout/bbb", "authc, perms[firstFile:*]"); // PermissionDao 也要有 firstFile:*
+//        filterMap.put("/loginLogout/bbb", "authc, perms[firstFile:*]");
         filterMap.put("/loginLogout/bbb2", "authc, perms[firstFile:read]");
         filterMap.put("/loginLogout/bbb3", "authc, perms[firstFile]");
         filterMap.put("/loginLogout/**", "authc");

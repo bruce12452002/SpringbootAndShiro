@@ -11,6 +11,7 @@ import org.apache.shiro.authz.annotation.RequiresGuest;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.apache.shiro.authz.annotation.RequiresUser;
+import org.apache.shiro.authz.permission.WildcardPermission;
 import org.apache.shiro.subject.Subject;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,8 +29,13 @@ public class LoginController {
         System.out.println("Authenticated前=" + currentUser.isAuthenticated());
         System.out.println("Remembered前=" + currentUser.isRemembered());
 
+
         try {
             currentUser.login(token);
+            System.out.println("a==" + currentUser.isPermitted("firstFile:read"));
+            System.out.println("b==" + currentUser.isPermitted(new WildcardPermission("firstFile:write,read")));
+            System.out.println("c==" + currentUser.isPermitted(new WildcardPermission("firstFile:*")));
+            System.out.println("d==" + currentUser.isPermitted("secondFile"));
             System.out.println("Authenticated後=" + currentUser.isAuthenticated());
             System.out.println("Remembered後=" + currentUser.isRemembered());
         } catch (UnknownAccountException uae) {
